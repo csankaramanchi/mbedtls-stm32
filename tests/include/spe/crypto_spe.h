@@ -1,6 +1,7 @@
 /*
  * Copyright The Mbed TLS Contributors
- * SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  Portions Copyright (C) STMicroelectronics, All Rights Reserved
+ * SPDX-License-Identifier: Apache-2.0
  *
  */
 
@@ -85,6 +86,10 @@
     PSA_FUNCTION_NAME(psa_cipher_finish)
 #define psa_cipher_abort \
     PSA_FUNCTION_NAME(psa_cipher_abort)
+#define psa_cipher_encrypt \
+    PSA_FUNCTION_NAME(psa_cipher_encrypt)
+#define psa_cipher_decrypt \
+    PSA_FUNCTION_NAME(psa_cipher_decrypt)
 #define psa_hash_operation_init \
     PSA_FUNCTION_NAME(psa_hash_operation_init)
 #define psa_hash_setup \
@@ -115,6 +120,10 @@
     PSA_FUNCTION_NAME(psa_mac_sign_finish)
 #define psa_mac_verify_finish \
     PSA_FUNCTION_NAME(psa_mac_verify_finish)
+#define psa_mac_compute \
+    PSA_FUNCTION_NAME(psa_mac_compute)
+#define psa_mac_verify \
+    PSA_FUNCTION_NAME(psa_mac_verify)
 #define psa_mac_abort \
     PSA_FUNCTION_NAME(psa_mac_abort)
 #define psa_sign_hash \
@@ -127,5 +136,9 @@
     PSA_FUNCTION_NAME(psa_asymmetric_decrypt)
 #define psa_generate_key \
     PSA_FUNCTION_NAME(psa_generate_key)
+#define psa_set_key_domain_parameters \
+    PSA_FUNCTION_NAME(psa_set_key_domain_parameters)
+#define psa_get_key_domain_parameters \
+    PSA_FUNCTION_NAME(psa_get_key_domain_parameters)
 
 #endif /* CRYPTO_SPE_H */

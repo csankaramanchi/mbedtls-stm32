@@ -2,10 +2,14 @@
  *  Root CA reading application
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
-#include "mbedtls/build_info.h"
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "mbedtls/config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 #include "mbedtls/platform.h"
 
@@ -48,7 +52,7 @@ struct options {
 } opt;
 
 
-static int read_certificates(const char *const *filenames)
+int read_certificates(const char *const *filenames)
 {
     mbedtls_x509_crt cas;
     int ret = 0;

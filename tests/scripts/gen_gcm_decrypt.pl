@@ -4,7 +4,7 @@
 # Only first 3 of every set used for compile time saving
 #
 # Copyright The Mbed TLS Contributors
-# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 
 use strict;
 

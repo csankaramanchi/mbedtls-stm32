@@ -2,10 +2,9 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
-#include <test/memory.h>
-#include <test/psa_memory_poisoning_wrappers.h>
+#include "test/memory.h"
 
 #include "psa_crypto_invasive.h"
 

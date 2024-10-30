@@ -1,6 +1,6 @@
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 /**
@@ -12,7 +12,7 @@
 #ifndef MBEDTLS_MPS_MBEDTLS_MPS_TRACE_H
 #define MBEDTLS_MPS_MBEDTLS_MPS_TRACE_H
 
-#include "ssl_misc.h"
+#include "common.h"
 #include "mps_common.h"
 #include "mps_trace.h"
 

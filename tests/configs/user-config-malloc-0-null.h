@@ -1,9 +1,9 @@
-/* mbedtls_config.h modifier that forces calloc(0) to return NULL.
+/* config.h modifier that forces calloc(0) to return NULL.
  * Used for testing.
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdlib.h>

@@ -6,7 +6,7 @@
 
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #include <test/helpers.h>
@@ -20,7 +20,7 @@
 
 #if defined(MBEDTLS_TEST_MEMORY_CAN_POISON)
 
-_Thread_local unsigned int mbedtls_test_memory_poisoning_count = 0;
+unsigned int mbedtls_test_memory_poisoning_count = 0;
 
 static void align_for_asan(const unsigned char **p_ptr, size_t *p_size)
 {

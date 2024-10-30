@@ -3,7 +3,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef PSA_CRYPTO_HELPERS_H
@@ -11,44 +11,16 @@
 
 #include "test/helpers.h"
 
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+#if defined(MBEDTLS_PSA_CRYPTO_C)
+
 #include "test/psa_helpers.h"
+
 #include <psa/crypto.h>
+
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+#include "mbedtls/psa_util.h"
 #endif
 
-#include <mbedtls/ctr_drbg.h>
-
-#if defined(MBEDTLS_PSA_CRYPTO_C)
-/** Initialize the PSA Crypto subsystem. */
-#define PSA_INIT() PSA_ASSERT(psa_crypto_init())
-
-/** Shut down the PSA Crypto subsystem and destroy persistent keys.
- * Expect a clean shutdown, with no slots in use.
- *
- * If some key slots are still in use, record the test case as failed,
- * but continue executing. This macro is suitable (and primarily intended)
- * for use in the cleanup section of test functions.
- *
- * \note Persistent keys must be recorded with #TEST_USES_KEY_ID before
- *       creating them.
- */
-#define PSA_DONE()                                                      \
-    do                                                                  \
-    {                                                                   \
-        mbedtls_test_fail_if_psa_leaking(__LINE__, __FILE__);           \
-        mbedtls_test_psa_purge_key_storage();                           \
-        mbedtls_psa_crypto_free();                                      \
-    }                                                                   \
-    while (0)
-#elif defined(MBEDTLS_PSA_CRYPTO_CLIENT) /* MBEDTLS_PSA_CRYPTO_CLIENT && !MBEDTLS_PSA_CRYPTO_C */
-#define PSA_INIT() PSA_ASSERT(psa_crypto_init())
-#define PSA_DONE() mbedtls_psa_crypto_free();
-#else  /* MBEDTLS_PSA_CRYPTO_CLIENT && !MBEDTLS_PSA_CRYPTO_C */
-#define PSA_INIT() ((void) 0)
-#define PSA_DONE() ((void) 0)
-#endif /* MBEDTLS_PSA_CRYPTO_C */
-
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
 
 #if defined(MBEDTLS_PSA_CRYPTO_STORAGE_C)
 
@@ -103,6 +75,8 @@ void mbedtls_test_psa_purge_key_cache(void);
 
 #endif /* MBEDTLS_PSA_CRYPTO_STORAGE_C */
 
+#define PSA_INIT() PSA_ASSERT(psa_crypto_init())
+
 /** Check for things that have not been cleaned up properly in the
  * PSA subsystem.
  *
@@ -124,6 +98,25 @@ const char *mbedtls_test_helper_is_psa_leaking(void);
     {                                                                   \
         if (mbedtls_test_fail_if_psa_leaking(__LINE__, __FILE__))       \
         goto exit;                                                      \
+    }                                                                   \
+    while (0)
+
+/** Shut down the PSA Crypto subsystem and destroy persistent keys.
+ * Expect a clean shutdown, with no slots in use.
+ *
+ * If some key slots are still in use, record the test case as failed,
+ * but continue executing. This macro is suitable (and primarily intended)
+ * for use in the cleanup section of test functions.
+ *
+ * \note Persistent keys must be recorded with #TEST_USES_KEY_ID before
+ *       creating them.
+ */
+#define PSA_DONE()                                                      \
+    do                                                                  \
+    {                                                                   \
+        mbedtls_test_fail_if_psa_leaking(__LINE__, __FILE__);           \
+        mbedtls_test_psa_purge_key_storage();                           \
+        mbedtls_psa_crypto_free();                                      \
     }                                                                   \
     while (0)
 
@@ -230,9 +223,7 @@ int mbedtls_test_inject_entropy_seed_write(unsigned char *buf, size_t len);
 int mbedtls_test_inject_entropy_restore(void);
 #endif /* MBEDTLS_PSA_INJECT_ENTROPY */
 
-/** Parse binary string and convert it to a long integer
- */
-uint64_t mbedtls_test_parse_binary_string(data_t *bin_string);
+
 
 /** Skip a test case if the given key is a 192 bits AES key and the AES
  *  implementation is at least partially provided by an accelerator or
@@ -253,7 +244,9 @@ uint64_t mbedtls_test_parse_binary_string(data_t *bin_string);
  *  \param key_type  Key type
  *  \param key_bits  Key length in number of bits.
  */
-#if defined(MBEDTLS_PSA_ACCEL_KEY_TYPE_AES)
+#if defined(MBEDTLS_AES_ALT) || \
+    defined(MBEDTLS_AES_SETKEY_ENC_ALT) || \
+    defined(MBEDTLS_PSA_ACCEL_KEY_TYPE_AES)
 #define MBEDTLS_TEST_HAVE_ALT_AES 1
 #else
 #define MBEDTLS_TEST_HAVE_ALT_AES 0
@@ -294,18 +287,18 @@ uint64_t mbedtls_test_parse_binary_string(data_t *bin_string);
  *  \param  alg             The AEAD algorithm.
  *  \param  nonce_length    The nonce length in number of bytes.
  */
-
-#if defined(MBEDTLS_PSA_ACCEL_ALG_GCM)
-#define MBEDTLS_TEST_HAVE_ACCEL_GCM  1
+#if defined(MBEDTLS_GCM_ALT) || \
+    defined(MBEDTLS_PSA_ACCEL_ALG_GCM)
+#define MBEDTLS_TEST_HAVE_ALT_GCM  1
 #else
-#define MBEDTLS_TEST_HAVE_ACCEL_GCM  0
+#define MBEDTLS_TEST_HAVE_ALT_GCM  0
 #endif
 
 #define MBEDTLS_TEST_PSA_SKIP_IF_ALT_GCM_NOT_12BYTES_NONCE(alg,           \
                                                            nonce_length) \
     do                                                                     \
     {                                                                      \
-        if ((MBEDTLS_TEST_HAVE_ACCEL_GCM) &&                               \
+        if ((MBEDTLS_TEST_HAVE_ALT_GCM) &&                               \
             (PSA_ALG_AEAD_WITH_SHORTENED_TAG((alg), 0) ==            \
              PSA_ALG_AEAD_WITH_SHORTENED_TAG(PSA_ALG_GCM, 0)) &&       \
             ((nonce_length) != 12))                                   \
@@ -316,188 +309,29 @@ uint64_t mbedtls_test_parse_binary_string(data_t *bin_string);
     }                                                                      \
     while (0)
 
-#endif /* MBEDTLS_PSA_CRYPTO_CLIENT */
+#endif /* MBEDTLS_PSA_CRYPTO_C */
 
 /** \def USE_PSA_INIT
  *
  * Call this macro to initialize the PSA subsystem if #MBEDTLS_USE_PSA_CRYPTO
- * or #MBEDTLS_SSL_PROTO_TLS1_3 (In contrast to TLS 1.2 implementation, the
- * TLS 1.3 one uses PSA independently of the definition of
- * #MBEDTLS_USE_PSA_CRYPTO) is enabled and do nothing otherwise.
- *
- * If the initialization fails, mark the test case as failed and jump to the
- * \p exit label.
+ * is enabled and do nothing otherwise. If the initialization fails, mark
+ * the test case as failed and jump to the \p exit label.
  */
 /** \def USE_PSA_DONE
  *
  * Call this macro at the end of a test case if you called #USE_PSA_INIT.
- *
- * This is like #PSA_DONE except it does nothing under the same conditions as
- * #USE_PSA_INIT.
+ * This is like #PSA_DONE, except that it does nothing if
+ * #MBEDTLS_USE_PSA_CRYPTO is disabled.
  */
-#if defined(MBEDTLS_USE_PSA_CRYPTO) || defined(MBEDTLS_SSL_PROTO_TLS1_3)
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
 #define USE_PSA_INIT() PSA_INIT()
 #define USE_PSA_DONE() PSA_DONE()
-#else /* MBEDTLS_USE_PSA_CRYPTO || MBEDTLS_SSL_PROTO_TLS1_3 */
+#else /* MBEDTLS_USE_PSA_CRYPTO */
 /* Define empty macros so that we can use them in the preamble and teardown
  * of every test function that uses PSA conditionally based on
  * MBEDTLS_USE_PSA_CRYPTO. */
 #define USE_PSA_INIT() ((void) 0)
 #define USE_PSA_DONE() ((void) 0)
-#endif /* !MBEDTLS_USE_PSA_CRYPTO && !MBEDTLS_SSL_PROTO_TLS1_3 */
-
-/** \def MD_PSA_INIT
- *
- * Call this macro to initialize the PSA subsystem if MD uses a driver,
- * and do nothing otherwise.
- *
- * If the initialization fails, mark the test case as failed and jump to the
- * \p exit label.
- */
-/** \def MD_PSA_DONE
- *
- * Call this macro at the end of a test case if you called #MD_PSA_INIT.
- *
- * This is like #PSA_DONE except it does nothing under the same conditions as
- * #MD_PSA_INIT.
- */
-#if defined(MBEDTLS_MD_SOME_PSA)
-#define MD_PSA_INIT()   PSA_INIT()
-#define MD_PSA_DONE()   PSA_DONE()
-#else /* MBEDTLS_MD_SOME_PSA */
-#define MD_PSA_INIT() ((void) 0)
-#define MD_PSA_DONE() ((void) 0)
-#endif /* MBEDTLS_MD_SOME_PSA */
-
-/** \def BLOCK_CIPHER_PSA_INIT
- *
- * Call this macro to initialize the PSA subsystem if BLOCK_CIPHER uses a driver,
- * and do nothing otherwise.
- *
- * If the initialization fails, mark the test case as failed and jump to the
- * \p exit label.
- */
-/** \def BLOCK_CIPHER_PSA_DONE
- *
- * Call this macro at the end of a test case if you called #BLOCK_CIPHER_PSA_INIT.
- *
- * This is like #PSA_DONE except it does nothing under the same conditions as
- * #BLOCK_CIPHER_PSA_INIT.
- */
-#if defined(MBEDTLS_BLOCK_CIPHER_SOME_PSA)
-#define BLOCK_CIPHER_PSA_INIT()   PSA_INIT()
-#define BLOCK_CIPHER_PSA_DONE()   PSA_DONE()
-#else /* MBEDTLS_MD_SOME_PSA */
-#define BLOCK_CIPHER_PSA_INIT() ((void) 0)
-#define BLOCK_CIPHER_PSA_DONE() ((void) 0)
-#endif /* MBEDTLS_MD_SOME_PSA */
-
-
-/** \def MD_OR_USE_PSA_INIT
- *
- * Call this macro to initialize the PSA subsystem if MD uses a driver,
- * or if #MBEDTLS_USE_PSA_CRYPTO or #MBEDTLS_SSL_PROTO_TLS1_3 is enabled,
- * and do nothing otherwise.
- *
- * If the initialization fails, mark the test case as failed and jump to the
- * \p exit label.
- */
-/** \def MD_OR_USE_PSA_DONE
- *
- * Call this macro at the end of a test case if you called #MD_OR_USE_PSA_INIT.
- *
- * This is like #PSA_DONE except it does nothing under the same conditions as
- * #MD_OR_USE_PSA_INIT.
- */
-#if defined(MBEDTLS_MD_SOME_PSA) || \
-    defined(MBEDTLS_USE_PSA_CRYPTO) || defined(MBEDTLS_SSL_PROTO_TLS1_3)
-#define MD_OR_USE_PSA_INIT()   PSA_INIT()
-#define MD_OR_USE_PSA_DONE()   PSA_DONE()
-#else
-#define MD_OR_USE_PSA_INIT() ((void) 0)
-#define MD_OR_USE_PSA_DONE() ((void) 0)
-#endif
-
-/** \def AES_PSA_INIT
- *
- * Call this macro to initialize the PSA subsystem if AES_C is not defined,
- * so that CTR_DRBG uses PSA implementation to get AES-ECB.
- *
- * If the initialization fails, mark the test case as failed and jump to the
- * \p exit label.
- */
-/** \def AES_PSA_DONE
- *
- * Call this macro at the end of a test case if you called #AES_PSA_INIT.
- *
- * This is like #PSA_DONE except it does nothing under the same conditions as
- * #AES_PSA_INIT.
- */
-#if defined(MBEDTLS_CTR_DRBG_USE_PSA_CRYPTO)
-#define AES_PSA_INIT()   PSA_INIT()
-#define AES_PSA_DONE()   PSA_DONE()
-#else /* MBEDTLS_CTR_DRBG_USE_PSA_CRYPTO */
-#define AES_PSA_INIT() ((void) 0)
-#define AES_PSA_DONE() ((void) 0)
-#endif /* MBEDTLS_CTR_DRBG_USE_PSA_CRYPTO */
-
-#if !defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG) &&                        \
-    defined(MBEDTLS_CTR_DRBG_C) &&                                      \
-    defined(MBEDTLS_CTR_DRBG_USE_PSA_CRYPTO)
-/* When AES_C is not defined and PSA does not have an external RNG,
- * then CTR_DRBG uses PSA to perform AES-ECB. In this scenario 1 key
- * slot is used internally from PSA to hold the AES key and it should
- * not be taken into account when evaluating remaining open slots. */
-#define MBEDTLS_TEST_PSA_INTERNAL_KEYS_FOR_DRBG 1
-#else
-#define MBEDTLS_TEST_PSA_INTERNAL_KEYS_FOR_DRBG 0
-#endif
-
-/** The number of volatile keys that PSA crypto uses internally.
- *
- * We expect that many volatile keys to be in use after a successful
- * psa_crypto_init().
- */
-#define MBEDTLS_TEST_PSA_INTERNAL_KEYS          \
-    MBEDTLS_TEST_PSA_INTERNAL_KEYS_FOR_DRBG
-
-/* A couple of helper macros to verify if MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE is
- * large enough to contain an RSA key pair of the given size. This is meant to be
- * used in test cases where MBEDTLS_PSA_STATIC_KEY_SLOTS is enabled. */
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
-
-#if (MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE >= PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(4096))
-#define MBEDTLS_TEST_STATIC_KEY_SLOTS_SUPPORT_RSA_4096
-#endif
-
-#if (MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE >= PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(2048))
-#define MBEDTLS_TEST_STATIC_KEY_SLOTS_SUPPORT_RSA_2048
-#endif
-
-#endif /* MBEDTLS_PSA_CRYPTO_CLIENT */
-
-/* Helper macro to get the size of the each key slot buffer. */
-#if defined(MBEDTLS_PSA_STATIC_KEY_SLOTS)
-#define MBEDTLS_PSA_KEY_BUFFER_MAX_SIZE     MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
-#else
-#define MBEDTLS_PSA_KEY_BUFFER_MAX_SIZE     SIZE_MAX
-#endif
-
-/* Helper macro for the PK module to check whether MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
- * is large enough to contain 4096-bit RSA key pairs. Of course this check is only
- * necessary if PK relies on PSA (i.e. MBEDTLS_USE_PSA_CRYPTO) to store and manage
- * the key. */
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
-
-#if !defined(MBEDTLS_PSA_STATIC_KEY_SLOTS) || \
-    defined(MBEDTLS_TEST_STATIC_KEY_SLOTS_SUPPORT_RSA_4096)
-#define MBEDTLS_TEST_PK_ALLOW_RSA_KEY_PAIR_4096
-#endif
-
-#else /* MBEDTLS_USE_PSA_CRYPTO */
-
-#define MBEDTLS_TEST_PK_ALLOW_RSA_KEY_PAIR_4096
-
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
+#endif /* !MBEDTLS_USE_PSA_CRYPTO */
 
 #endif /* PSA_CRYPTO_HELPERS_H */

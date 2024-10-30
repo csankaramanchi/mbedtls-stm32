@@ -5,7 +5,7 @@
 
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #include <test/helpers.h>
@@ -14,8 +14,6 @@
 #if defined(MBEDTLS_ASN1_PARSE_C)
 
 #include <mbedtls/asn1.h>
-
-#include <test/asn1_helpers.h>
 
 int mbedtls_test_asn1_skip_integer(unsigned char **p, const unsigned char *end,
                                    size_t min_bits, size_t max_bits,

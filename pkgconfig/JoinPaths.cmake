@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 # This module provides function for joining paths
 # known from most languages
 #
@@ -6,7 +6,7 @@
 #
 # This script originates from:
 #   - https://github.com/jtojnar/cmake-snips
-# Jan has provided re-licensing under Apache 2.0 and GPL 2.0+ and
+# Jan has provided re-licensing under Apache 2.0 and
 # allowed for the change of Copyright.
 #
 # Modelled after Python’s os.path.join

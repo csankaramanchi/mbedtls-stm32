@@ -6,11 +6,11 @@
 /*
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 /**
- * @mainpage Mbed TLS v4.0.0 API Documentation
+ * @mainpage Mbed TLS v2.28.8 API Documentation
  *
  * This documentation describes the internal structure of Mbed TLS.  It was
  * automatically generated from specially formatted comment blocks in

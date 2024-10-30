@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Copyright The Mbed TLS Contributors
-# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 
 """
 This script checks the current state of the source code for minor issues,
@@ -24,7 +24,7 @@ except ImportError:
     pass
 
 import scripts_path # pylint: disable=unused-import
-from mbedtls_framework import build_tree
+from mbedtls_dev import build_tree
 
 
 class FileIssueTracker:
@@ -105,14 +105,13 @@ class FileIssueTracker:
 
 BINARY_FILE_PATH_RE_LIST = [
     r'docs/.*\.pdf\Z',
-    r'docs/.*\.png\Z',
     r'programs/fuzz/corpuses/[^.]+\Z',
-    r'framework/data_files/[^.]+\Z',
-    r'framework/data_files/.*\.(crt|csr|db|der|key|pubkey)\Z',
-    r'framework/data_files/.*\.req\.[^/]+\Z',
-    r'framework/data_files/.*malformed[^/]+\Z',
-    r'framework/data_files/format_pkcs12\.fmt\Z',
-    r'framework/data_files/.*\.bin\Z',
+    r'tests/data_files/[^.]+\Z',
+    r'tests/data_files/.*\.(crt|csr|db|der|key|pubkey)\Z',
+    r'tests/data_files/.*\.req\.[^/]+\Z',
+    r'tests/data_files/.*malformed[^/]+\Z',
+    r'tests/data_files/format_pkcs12\.fmt\Z',
+    r'tests/data_files/.*\.bin\Z',
 ]
 BINARY_FILE_PATH_RE = re.compile('|'.join(BINARY_FILE_PATH_RE_LIST))
 
@@ -320,10 +319,8 @@ class TabIssueTracker(LineIssueTracker):
 
     heading = "Tabs present:"
     suffix_exemptions = frozenset([
-        ".make",
         ".pem", # some openssl dumps have tabs
         ".sln",
-        "/.gitmodules",
         "/Makefile",
         "/Makefile.inc",
         "/generate_visualc_files.pl",
@@ -368,19 +365,18 @@ class LicenseIssueTracker(LineIssueTracker):
     heading = "License issue:"
 
     LICENSE_EXEMPTION_RE_LIST = [
-        # Exempt third-party drivers which may be under a different license
-        r'tf-psa-crypto/drivers/(?=(everest)/.*)',
+        # Third-party code, other than whitelisted third-party modules,
+        # may be under a different license.
+        r'3rdparty/(?!(p256-m)/.*)',
         # Documentation explaining the license may have accidental
         # false positives.
-        r'(ChangeLog|LICENSE|framework\/LICENSE|[-0-9A-Z_a-z]+\.md)\Z',
+        r'(ChangeLog|LICENSE|[-0-9A-Z_a-z]+\.md)\Z',
         # Files imported from TF-M, and not used except in test builds,
         # may be under a different license.
-        r'configs/ext/crypto_config_profile_medium\.h\Z',
-        r'configs/ext/tfm_mbedcrypto_config_profile_medium\.h\Z',
-        r'configs/ext/README\.md\Z',
+        r'configs/crypto_config_profile_medium\.h\Z',
+        r'configs/tfm_mbedcrypto_config_profile_medium\.h\Z',
         # Third-party file.
         r'dco\.txt\Z',
-        r'framework\/dco\.txt\Z',
     ]
     path_exemptions = re.compile('|'.join(BINARY_FILE_PATH_RE_LIST +
                                           LICENSE_EXEMPTION_RE_LIST))
@@ -390,7 +386,7 @@ class LicenseIssueTracker(LineIssueTracker):
     COPYRIGHT_RE = re.compile(rb'.*\bcopyright\s+((?:\w|\s|[()]|[^ -~])*\w)', re.I)
 
     SPDX_HEADER_KEY = b'SPDX-License-Identifier'
-    LICENSE_IDENTIFIER = b'Apache-2.0 OR GPL-2.0-or-later'
+    LICENSE_IDENTIFIER = b'Apache-2.0'
     SPDX_RE = re.compile(br'.*?(' +
                          re.escape(SPDX_HEADER_KEY) +
                          br')(:\s*(.*?)\W*\Z|.*)', re.I)
@@ -446,25 +442,6 @@ class LicenseIssueTracker(LineIssueTracker):
         return False
 
 
-class ErrorAddIssueTracker(LineIssueTracker):
-    """Signal direct additions of error codes.
-
-    Adding a low-level error code with a high-level error code is deprecated
-    and should use MBEDTLS_ERROR_ADD.
-    """
-
-    heading = "Direct addition of error codes"
-
-    _ERR_PLUS_RE = re.compile(br'MBEDTLS_ERR_\w+ *\+|'
-                              br'\+ *MBEDTLS_ERR_')
-    _EXCLUDE_RE = re.compile(br' *case ')
-
-    def issue_with_line(self, line, filepath, line_number):
-        if self._ERR_PLUS_RE.search(line) and not self._EXCLUDE_RE.match(line):
-            return True
-        return False
-
-
 class IntegrityChecker:
     """Sanity-check files under the current directory."""
 
@@ -486,11 +463,9 @@ class IntegrityChecker:
             TabIssueTracker(),
             MergeArtifactIssueTracker(),
             LicenseIssueTracker(),
-            ErrorAddIssueTracker(),
         ]
 
     def setup_logger(self, log_file, level=logging.INFO):
-        """Log to log_file if provided, or to stderr if None."""
         self.logger = logging.getLogger()
         self.logger.setLevel(level)
         if log_file:
@@ -502,27 +477,9 @@ class IntegrityChecker:
 
     @staticmethod
     def collect_files():
-        """Return the list of files to check.
-
-        These are the regular files commited into Git.
-        """
-        bytes_output = subprocess.check_output(['git', '-C', 'framework',
-                                                'ls-files', '-z'])
-        bytes_framework_filepaths = bytes_output.split(b'\0')[:-1]
-        bytes_framework_filepaths = ["framework/".encode() + filepath
-                                     for filepath in bytes_framework_filepaths]
-
         bytes_output = subprocess.check_output(['git', 'ls-files', '-z'])
-        bytes_filepaths = bytes_output.split(b'\0')[:-1] + \
-                          bytes_framework_filepaths
+        bytes_filepaths = bytes_output.split(b'\0')[:-1]
         ascii_filepaths = map(lambda fp: fp.decode('ascii'), bytes_filepaths)
-
-        # Filter out directories. Normally Git doesn't list directories
-        # (it only knows about the files inside them), but there is
-        # at least one case where 'git ls-files' includes a directory:
-        # submodules. Just skip submodules (and any other directories).
-        ascii_filepaths = [fp for fp in ascii_filepaths
-                           if os.path.isfile(fp)]
         # Prepend './' to files in the top-level directory so that
         # something like `'/Makefile' in fp` matches in the top-level
         # directory as well as in subdirectories.
@@ -530,17 +487,12 @@ class IntegrityChecker:
                 for fp in ascii_filepaths]
 
     def check_files(self):
-        """Check all files for all issues."""
         for issue_to_check in self.issues_to_check:
             for filepath in self.collect_files():
                 if issue_to_check.should_check_file(filepath):
                     issue_to_check.check_file_for_issue(filepath)
 
     def output_issues(self):
-        """Log the issues found and their locations.
-
-        Return 1 if there were issues, 0 otherwise.
-        """
         integrity_return_code = 0
         for issue_to_check in self.issues_to_check:
             if issue_to_check.files_with_issues:

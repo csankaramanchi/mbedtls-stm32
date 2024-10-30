@@ -2,18 +2,22 @@
  * Test driver for MAC entry points.
  */
 /*  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
-#include <test/helpers.h>
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "mbedtls/config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
-#if defined(PSA_CRYPTO_DRIVER_TEST)
+#if defined(MBEDTLS_PSA_CRYPTO_DRIVERS) && defined(PSA_CRYPTO_DRIVER_TEST)
 #include "psa_crypto_mac.h"
 
 #include "test/drivers/mac.h"
 
 #if defined(MBEDTLS_TEST_LIBTESTDRIVER1)
-#include "libtestdriver1/tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.h"
+#include "libtestdriver1/library/psa_crypto_mac.h"
 #endif
 
 mbedtls_test_driver_mac_hooks_t mbedtls_test_driver_mac_hooks =
@@ -419,4 +423,4 @@ psa_status_t mbedtls_test_opaque_mac_abort(
     return mbedtls_test_driver_mac_hooks.driver_status;
 }
 
-#endif /* PSA_CRYPTO_DRIVER_TEST */
+#endif /* MBEDTLS_PSA_CRYPTO_DRIVERS && PSA_CRYPTO_DRIVER_TEST */

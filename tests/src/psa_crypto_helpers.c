@@ -5,17 +5,13 @@
 
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #include <test/helpers.h>
 #include <test/macros.h>
 #include <psa_crypto_slot_management.h>
 #include <test/psa_crypto_helpers.h>
-
-#if defined(MBEDTLS_CTR_DRBG_C)
-#include <mbedtls/ctr_drbg.h>
-#endif
 
 #if defined(MBEDTLS_PSA_CRYPTO_C)
 
@@ -74,12 +70,7 @@ const char *mbedtls_test_helper_is_psa_leaking(void)
 
     mbedtls_psa_get_stats(&stats);
 
-    /* Some volatile slots may be used for internal purposes. Generally
-     * we'll have exactly MBEDTLS_TEST_PSA_INTERNAL_KEYS at this point,
-     * but in some cases we might have less, e.g. if a code path calls
-     * PSA_DONE more than once, or if there has only been a partial or
-     * failed initialization. */
-    if (stats.volatile_slots > MBEDTLS_TEST_PSA_INTERNAL_KEYS) {
+    if (stats.volatile_slots != 0) {
         return "A volatile slot has not been closed properly.";
     }
     if (stats.persistent_slots != 0) {
@@ -144,17 +135,6 @@ int mbedtls_test_fail_if_psa_leaking(int line_no, const char *filename)
         mbedtls_test_fail(msg, line_no, filename);
         return 1;
     }
-}
-
-uint64_t mbedtls_test_parse_binary_string(data_t *bin_string)
-{
-    uint64_t result = 0;
-    TEST_LE_U(bin_string->len, 8);
-    for (size_t i = 0; i < bin_string->len; i++) {
-        result = result << 8 | bin_string->x[i];
-    }
-exit:
-    return result; /* returns 0 if len > 8 */
 }
 
 #if defined(MBEDTLS_PSA_INJECT_ENTROPY)

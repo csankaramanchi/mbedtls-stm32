@@ -2,7 +2,7 @@
  *  Error message information
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #include "common.h"
@@ -151,5 +151,9 @@ void mbedtls_strerror(int ret, char *buf, size_t buflen)
 }
 
 #endif /* MBEDTLS_ERROR_C */
+
+#if defined(MBEDTLS_TEST_HOOKS)
+void (*mbedtls_test_hook_error_add)(int, int, const char *, int);
+#endif
 
 #endif /* MBEDTLS_ERROR_C || MBEDTLS_ERROR_STRERROR_DUMMY */

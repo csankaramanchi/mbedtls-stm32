@@ -13,7 +13,7 @@ only supported with make (as opposed to CMake or other build methods).
 """
 
 # Copyright The Mbed TLS Contributors
-# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 
 import argparse
 import os

@@ -2,7 +2,7 @@
  *  Windows CE console application entry point
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
  */
 
 #if defined(_WIN32_WCE)
