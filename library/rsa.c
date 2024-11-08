@@ -35,7 +35,7 @@
 #include "constant_time_internal.h"
 #include "mbedtls/constant_time.h"
 #include "bignum_internal.h"
-
+#endif
 #include <string.h>
 
 #if defined(MBEDTLS_PKCS1_V21)
@@ -48,7 +48,7 @@
 
 #include "mbedtls/platform.h"
 
-#if !defined(MBEDTLS_RSA_ALT)
+//#if !defined(MBEDTLS_RSA_ALT)
 
 /* Parameter validation macros */
 #define RSA_VALIDATE_RET(cond)                                       \
@@ -56,28 +56,28 @@
 #define RSA_VALIDATE(cond)                                           \
     MBEDTLS_INTERNAL_VALIDATE(cond)
 
-int mbedtls_rsa_import(mbedtls_rsa_context *ctx,
-                       const mbedtls_mpi *N,
-                       const mbedtls_mpi *P, const mbedtls_mpi *Q,
-                       const mbedtls_mpi *D, const mbedtls_mpi *E)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    RSA_VALIDATE_RET(ctx != NULL);
+// int mbedtls_rsa_import(mbedtls_rsa_context *ctx,
+//                        const mbedtls_mpi *N,
+//                        const mbedtls_mpi *P, const mbedtls_mpi *Q,
+//                        const mbedtls_mpi *D, const mbedtls_mpi *E)
+// {
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+//     RSA_VALIDATE_RET(ctx != NULL);
 
-    if ((N != NULL && (ret = mbedtls_mpi_copy(&ctx->N, N)) != 0) ||
-        (P != NULL && (ret = mbedtls_mpi_copy(&ctx->P, P)) != 0) ||
-        (Q != NULL && (ret = mbedtls_mpi_copy(&ctx->Q, Q)) != 0) ||
-        (D != NULL && (ret = mbedtls_mpi_copy(&ctx->D, D)) != 0) ||
-        (E != NULL && (ret = mbedtls_mpi_copy(&ctx->E, E)) != 0)) {
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
-    }
+//     if ((N != NULL && (ret = mbedtls_mpi_copy(&ctx->N, N)) != 0) ||
+//         (P != NULL && (ret = mbedtls_mpi_copy(&ctx->P, P)) != 0) ||
+//         (Q != NULL && (ret = mbedtls_mpi_copy(&ctx->Q, Q)) != 0) ||
+//         (D != NULL && (ret = mbedtls_mpi_copy(&ctx->D, D)) != 0) ||
+//         (E != NULL && (ret = mbedtls_mpi_copy(&ctx->E, E)) != 0)) {
+//         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
+//     }
 
-    if (N != NULL) {
-        ctx->len = mbedtls_mpi_size(&ctx->N);
-    }
+//     if (N != NULL) {
+//         ctx->len = mbedtls_mpi_size(&ctx->N);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 int mbedtls_rsa_import_raw(mbedtls_rsa_context *ctx,
                            unsigned char const *N, size_t N_len,
@@ -308,58 +308,58 @@ int mbedtls_rsa_complete(mbedtls_rsa_context *ctx)
     return rsa_check_context(ctx, is_priv, 1);
 }
 
-int mbedtls_rsa_export_raw(const mbedtls_rsa_context *ctx,
-                           unsigned char *N, size_t N_len,
-                           unsigned char *P, size_t P_len,
-                           unsigned char *Q, size_t Q_len,
-                           unsigned char *D, size_t D_len,
-                           unsigned char *E, size_t E_len)
-{
-    int ret = 0;
-    int is_priv;
-    RSA_VALIDATE_RET(ctx != NULL);
+// int mbedtls_rsa_export_raw(const mbedtls_rsa_context *ctx,
+//                            unsigned char *N, size_t N_len,
+//                            unsigned char *P, size_t P_len,
+//                            unsigned char *Q, size_t Q_len,
+//                            unsigned char *D, size_t D_len,
+//                            unsigned char *E, size_t E_len)
+// {
+//     int ret = 0;
+//     int is_priv;
+//     RSA_VALIDATE_RET(ctx != NULL);
 
-    /* Check if key is private or public */
-    is_priv =
-        mbedtls_mpi_cmp_int(&ctx->N, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->P, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->Q, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->D, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->E, 0) != 0;
+//     /* Check if key is private or public */
+//     is_priv =
+//         mbedtls_mpi_cmp_int(&ctx->N, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->P, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->Q, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->D, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->E, 0) != 0;
 
-    if (!is_priv) {
-        /* If we're trying to export private parameters for a public key,
-         * something must be wrong. */
-        if (P != NULL || Q != NULL || D != NULL) {
-            return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
-        }
+//     if (!is_priv) {
+//         /* If we're trying to export private parameters for a public key,
+//          * something must be wrong. */
+//         if (P != NULL || Q != NULL || D != NULL) {
+//             return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+//         }
 
-    }
+//     }
 
-    if (N != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->N, N, N_len));
-    }
+//     if (N != NULL) {
+//         MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->N, N, N_len));
+//     }
 
-    if (P != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->P, P, P_len));
-    }
+//     if (P != NULL) {
+//         MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->P, P, P_len));
+//     }
 
-    if (Q != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->Q, Q, Q_len));
-    }
+//     if (Q != NULL) {
+//         MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->Q, Q, Q_len));
+//     }
 
-    if (D != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->D, D, D_len));
-    }
+//     if (D != NULL) {
+//         MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->D, D, D_len));
+//     }
 
-    if (E != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->E, E, E_len));
-    }
+//     if (E != NULL) {
+//         MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&ctx->E, E, E_len));
+//     }
 
-cleanup:
+// cleanup:
 
-    return ret;
-}
+//     return ret;
+// }
 
 int mbedtls_rsa_export(const mbedtls_rsa_context *ctx,
                        mbedtls_mpi *N, mbedtls_mpi *P, mbedtls_mpi *Q,
@@ -399,47 +399,47 @@ int mbedtls_rsa_export(const mbedtls_rsa_context *ctx,
     return 0;
 }
 
-/*
- * Export CRT parameters
- * This must also be implemented if CRT is not used, for being able to
- * write DER encoded RSA keys. The helper function mbedtls_rsa_deduce_crt
- * can be used in this case.
- */
-int mbedtls_rsa_export_crt(const mbedtls_rsa_context *ctx,
-                           mbedtls_mpi *DP, mbedtls_mpi *DQ, mbedtls_mpi *QP)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    int is_priv;
-    RSA_VALIDATE_RET(ctx != NULL);
+// /*
+//  * Export CRT parameters
+//  * This must also be implemented if CRT is not used, for being able to
+//  * write DER encoded RSA keys. The helper function mbedtls_rsa_deduce_crt
+//  * can be used in this case.
+//  */
+// int mbedtls_rsa_export_crt(const mbedtls_rsa_context *ctx,
+//                            mbedtls_mpi *DP, mbedtls_mpi *DQ, mbedtls_mpi *QP)
+// {
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+//     int is_priv;
+//     RSA_VALIDATE_RET(ctx != NULL);
 
-    /* Check if key is private or public */
-    is_priv =
-        mbedtls_mpi_cmp_int(&ctx->N, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->P, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->Q, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->D, 0) != 0 &&
-        mbedtls_mpi_cmp_int(&ctx->E, 0) != 0;
+//     /* Check if key is private or public */
+//     is_priv =
+//         mbedtls_mpi_cmp_int(&ctx->N, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->P, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->Q, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->D, 0) != 0 &&
+//         mbedtls_mpi_cmp_int(&ctx->E, 0) != 0;
 
-    if (!is_priv) {
-        return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
-    }
+//     if (!is_priv) {
+//         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
+//     }
 
-#if !defined(MBEDTLS_RSA_NO_CRT)
-    /* Export all requested blinding parameters. */
-    if ((DP != NULL && (ret = mbedtls_mpi_copy(DP, &ctx->DP)) != 0) ||
-        (DQ != NULL && (ret = mbedtls_mpi_copy(DQ, &ctx->DQ)) != 0) ||
-        (QP != NULL && (ret = mbedtls_mpi_copy(QP, &ctx->QP)) != 0)) {
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
-    }
-#else
-    if ((ret = mbedtls_rsa_deduce_crt(&ctx->P, &ctx->Q, &ctx->D,
-                                      DP, DQ, QP)) != 0) {
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
-    }
-#endif
+// #if !defined(MBEDTLS_RSA_NO_CRT)
+//     /* Export all requested blinding parameters. */
+//     if ((DP != NULL && (ret = mbedtls_mpi_copy(DP, &ctx->DP)) != 0) ||
+//         (DQ != NULL && (ret = mbedtls_mpi_copy(DQ, &ctx->DQ)) != 0) ||
+//         (QP != NULL && (ret = mbedtls_mpi_copy(QP, &ctx->QP)) != 0)) {
+//         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
+//     }
+// #else
+//     if ((ret = mbedtls_rsa_deduce_crt(&ctx->P, &ctx->Q, &ctx->D,
+//                                       DP, DQ, QP)) != 0) {
+//         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_BAD_INPUT_DATA, ret);
+//     }
+// #endif
 
-    return 0;
-}
+//     return 0;
+// }
 
 /*
  * Initialize an RSA context
@@ -639,9 +639,9 @@ int mbedtls_rsa_check_pubkey(const mbedtls_rsa_context *ctx)
     return 0;
 }
 
-/*
- * Check for the consistency of all fields in an RSA private key context
- */
+// /*
+//  * Check for the consistency of all fields in an RSA private key context
+//  */
 int mbedtls_rsa_check_privkey(const mbedtls_rsa_context *ctx)
 {
     RSA_VALIDATE_RET(ctx != NULL);
@@ -666,9 +666,9 @@ int mbedtls_rsa_check_privkey(const mbedtls_rsa_context *ctx)
     return 0;
 }
 
-/*
- * Check if contexts holding a public and private key match
- */
+// /*
+//  * Check if contexts holding a public and private key match
+//  */
 int mbedtls_rsa_check_pub_priv(const mbedtls_rsa_context *pub,
                                const mbedtls_rsa_context *prv)
 {
@@ -805,10 +805,10 @@ cleanup:
     return ret;
 }
 
-/*
- * Unblind
- * T = T * Vf mod N
- */
+// /*
+//  * Unblind
+//  * T = T * Vf mod N
+//  */
 static int rsa_unblind(mbedtls_mpi *T, mbedtls_mpi *Vf, const mbedtls_mpi *N)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -1255,7 +1255,7 @@ exit:
 }
 #endif /* MBEDTLS_PKCS1_V21 */
 
-#if defined(MBEDTLS_PKCS1_V15)
+//#if defined(MBEDTLS_PKCS1_V15)
 /*
  * Implementation of the PKCS#1 v2.1 RSAES-PKCS1-V1_5-ENCRYPT function
  */
@@ -1328,11 +1328,11 @@ int mbedtls_rsa_rsaes_pkcs1_v15_encrypt(mbedtls_rsa_context *ctx,
             ? mbedtls_rsa_public(ctx, output, output)
             : mbedtls_rsa_private(ctx, f_rng, p_rng, output, output);
 }
-#endif /* MBEDTLS_PKCS1_V15 */
+//#endif /* MBEDTLS_PKCS1_V15 */
 
-/*
- * Add the message padding, then do an RSA operation
- */
+// /*
+//  * Add the message padding, then do an RSA operation
+//  */
 int mbedtls_rsa_pkcs1_encrypt(mbedtls_rsa_context *ctx,
                               int (*f_rng)(void *, unsigned char *, size_t),
                               void *p_rng,
@@ -1564,11 +1564,11 @@ cleanup:
 
     return ret;
 }
-#endif /* MBEDTLS_PKCS1_V15 */
+// #endif /* MBEDTLS_PKCS1_V15 */
 
-/*
- * Do an RSA operation, then remove the message padding
- */
+// /*
+//  * Do an RSA operation, then remove the message padding
+//  */
 int mbedtls_rsa_pkcs1_decrypt(mbedtls_rsa_context *ctx,
                               int (*f_rng)(void *, unsigned char *, size_t),
                               void *p_rng,
@@ -1916,9 +1916,9 @@ static int rsa_rsassa_pkcs1_v15_encode(mbedtls_md_type_t md_alg,
     return 0;
 }
 
-/*
- * Do an RSA operation to sign the message digest
- */
+// /*
+//  * Do an RSA operation to sign the message digest
+//  */
 int mbedtls_rsa_rsassa_pkcs1_v15_sign(mbedtls_rsa_context *ctx,
                                       int (*f_rng)(void *, unsigned char *, size_t),
                                       void *p_rng,
@@ -1999,11 +1999,11 @@ cleanup:
     }
     return ret;
 }
-#endif /* MBEDTLS_PKCS1_V15 */
+// #endif /* MBEDTLS_PKCS1_V15 */
 
-/*
- * Do an RSA operation to sign the message digest
- */
+// /*
+//  * Do an RSA operation to sign the message digest
+//  */
 int mbedtls_rsa_pkcs1_sign(mbedtls_rsa_context *ctx,
                            int (*f_rng)(void *, unsigned char *, size_t),
                            void *p_rng,

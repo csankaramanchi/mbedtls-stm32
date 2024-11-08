@@ -689,189 +689,189 @@ cleanup:
 }
 #endif /* MBEDTLS_FS_IO */
 
-int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char sum[MBEDTLS_MD_MAX_SIZE];
-    unsigned char *ipad, *opad;
-    size_t i;
+// int mbedtls_md_hmac_starts(mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen)
+// {
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+//     unsigned char sum[MBEDTLS_MD_MAX_SIZE];
+//     unsigned char *ipad, *opad;
+//     size_t i;
 
-    if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+//     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    if (keylen > (size_t) ctx->md_info->block_size) {
-        if ((ret = mbedtls_md_starts(ctx)) != 0) {
-            goto cleanup;
-        }
-        if ((ret = mbedtls_md_update(ctx, key, keylen)) != 0) {
-            goto cleanup;
-        }
-        if ((ret = mbedtls_md_finish(ctx, sum)) != 0) {
-            goto cleanup;
-        }
+//     if (keylen > (size_t) ctx->md_info->block_size) {
+//         if ((ret = mbedtls_md_starts(ctx)) != 0) {
+//             goto cleanup;
+//         }
+//         if ((ret = mbedtls_md_update(ctx, key, keylen)) != 0) {
+//             goto cleanup;
+//         }
+//         if ((ret = mbedtls_md_finish(ctx, sum)) != 0) {
+//             goto cleanup;
+//         }
 
-        keylen = ctx->md_info->size;
-        key = sum;
-    }
+//         keylen = ctx->md_info->size;
+//         key = sum;
+//     }
 
-    ipad = (unsigned char *) ctx->hmac_ctx;
-    opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
+//     ipad = (unsigned char *) ctx->hmac_ctx;
+//     opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
 
-    memset(ipad, 0x36, ctx->md_info->block_size);
-    memset(opad, 0x5C, ctx->md_info->block_size);
+//     memset(ipad, 0x36, ctx->md_info->block_size);
+//     memset(opad, 0x5C, ctx->md_info->block_size);
 
-    for (i = 0; i < keylen; i++) {
-        ipad[i] = (unsigned char) (ipad[i] ^ key[i]);
-        opad[i] = (unsigned char) (opad[i] ^ key[i]);
-    }
+//     for (i = 0; i < keylen; i++) {
+//         ipad[i] = (unsigned char) (ipad[i] ^ key[i]);
+//         opad[i] = (unsigned char) (opad[i] ^ key[i]);
+//     }
 
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_md_update(ctx, ipad,
-                                 ctx->md_info->block_size)) != 0) {
-        goto cleanup;
-    }
+//     if ((ret = mbedtls_md_starts(ctx)) != 0) {
+//         goto cleanup;
+//     }
+//     if ((ret = mbedtls_md_update(ctx, ipad,
+//                                  ctx->md_info->block_size)) != 0) {
+//         goto cleanup;
+//     }
 
-cleanup:
-    mbedtls_platform_zeroize(sum, sizeof(sum));
+// cleanup:
+//     mbedtls_platform_zeroize(sum, sizeof(sum));
 
-    return ret;
-}
+//     return ret;
+// }
 
-int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen)
-{
-    if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+// int mbedtls_md_hmac_update(mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen)
+// {
+//     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    return mbedtls_md_update(ctx, input, ilen);
-}
+//     return mbedtls_md_update(ctx, input, ilen);
+// }
 
-int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char tmp[MBEDTLS_MD_MAX_SIZE];
-    unsigned char *opad;
+// int mbedtls_md_hmac_finish(mbedtls_md_context_t *ctx, unsigned char *output)
+// {
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+//     unsigned char tmp[MBEDTLS_MD_MAX_SIZE];
+//     unsigned char *opad;
 
-    if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+//     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
+//     opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
 
-    if ((ret = mbedtls_md_finish(ctx, tmp)) != 0) {
-        return ret;
-    }
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
-        return ret;
-    }
-    if ((ret = mbedtls_md_update(ctx, opad,
-                                 ctx->md_info->block_size)) != 0) {
-        return ret;
-    }
-    if ((ret = mbedtls_md_update(ctx, tmp,
-                                 ctx->md_info->size)) != 0) {
-        return ret;
-    }
-    return mbedtls_md_finish(ctx, output);
-}
+//     if ((ret = mbedtls_md_finish(ctx, tmp)) != 0) {
+//         return ret;
+//     }
+//     if ((ret = mbedtls_md_starts(ctx)) != 0) {
+//         return ret;
+//     }
+//     if ((ret = mbedtls_md_update(ctx, opad,
+//                                  ctx->md_info->block_size)) != 0) {
+//         return ret;
+//     }
+//     if ((ret = mbedtls_md_update(ctx, tmp,
+//                                  ctx->md_info->size)) != 0) {
+//         return ret;
+//     }
+//     return mbedtls_md_finish(ctx, output);
+// }
 
-int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    unsigned char *ipad;
+// int mbedtls_md_hmac_reset(mbedtls_md_context_t *ctx)
+// {
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+//     unsigned char *ipad;
 
-    if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+//     if (ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    ipad = (unsigned char *) ctx->hmac_ctx;
+//     ipad = (unsigned char *) ctx->hmac_ctx;
 
-    if ((ret = mbedtls_md_starts(ctx)) != 0) {
-        return ret;
-    }
-    return mbedtls_md_update(ctx, ipad, ctx->md_info->block_size);
-}
+//     if ((ret = mbedtls_md_starts(ctx)) != 0) {
+//         return ret;
+//     }
+//     return mbedtls_md_update(ctx, ipad, ctx->md_info->block_size);
+// }
 
-int mbedtls_md_hmac(const mbedtls_md_info_t *md_info,
-                    const unsigned char *key, size_t keylen,
-                    const unsigned char *input, size_t ilen,
-                    unsigned char *output)
-{
-    mbedtls_md_context_t ctx;
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+// int mbedtls_md_hmac(const mbedtls_md_info_t *md_info,
+//                     const unsigned char *key, size_t keylen,
+//                     const unsigned char *input, size_t ilen,
+//                     unsigned char *output)
+// {
+//     mbedtls_md_context_t ctx;
+//     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    if (md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+//     if (md_info == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    mbedtls_md_init(&ctx);
+//     mbedtls_md_init(&ctx);
 
-    if ((ret = mbedtls_md_setup(&ctx, md_info, 1)) != 0) {
-        goto cleanup;
-    }
+//     if ((ret = mbedtls_md_setup(&ctx, md_info, 1)) != 0) {
+//         goto cleanup;
+//     }
 
-    if ((ret = mbedtls_md_hmac_starts(&ctx, key, keylen)) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_md_hmac_update(&ctx, input, ilen)) != 0) {
-        goto cleanup;
-    }
-    if ((ret = mbedtls_md_hmac_finish(&ctx, output)) != 0) {
-        goto cleanup;
-    }
+//     if ((ret = mbedtls_md_hmac_starts(&ctx, key, keylen)) != 0) {
+//         goto cleanup;
+//     }
+//     if ((ret = mbedtls_md_hmac_update(&ctx, input, ilen)) != 0) {
+//         goto cleanup;
+//     }
+//     if ((ret = mbedtls_md_hmac_finish(&ctx, output)) != 0) {
+//         goto cleanup;
+//     }
 
-cleanup:
-    mbedtls_md_free(&ctx);
+// cleanup:
+//     mbedtls_md_free(&ctx);
 
-    return ret;
-}
+//     return ret;
+// }
 
-int mbedtls_md_process(mbedtls_md_context_t *ctx, const unsigned char *data)
-{
-    if (ctx == NULL || ctx->md_info == NULL) {
-        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
+// int mbedtls_md_process(mbedtls_md_context_t *ctx, const unsigned char *data)
+// {
+//     if (ctx == NULL || ctx->md_info == NULL) {
+//         return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
 
-    switch (ctx->md_info->type) {
-#if defined(MBEDTLS_MD2_C)
-        case MBEDTLS_MD_MD2:
-            return mbedtls_internal_md2_process(ctx->md_ctx);
-#endif
-#if defined(MBEDTLS_MD4_C)
-        case MBEDTLS_MD_MD4:
-            return mbedtls_internal_md4_process(ctx->md_ctx, data);
-#endif
-#if defined(MBEDTLS_MD5_C)
-        case MBEDTLS_MD_MD5:
-            return mbedtls_internal_md5_process(ctx->md_ctx, data);
-#endif
-#if defined(MBEDTLS_RIPEMD160_C)
-        case MBEDTLS_MD_RIPEMD160:
-            return mbedtls_internal_ripemd160_process(ctx->md_ctx, data);
-#endif
-#if defined(MBEDTLS_SHA1_C)
-        case MBEDTLS_MD_SHA1:
-            return mbedtls_internal_sha1_process(ctx->md_ctx, data);
-#endif
-#if defined(MBEDTLS_SHA256_C)
-        case MBEDTLS_MD_SHA224:
-        case MBEDTLS_MD_SHA256:
-            return mbedtls_internal_sha256_process(ctx->md_ctx, data);
-#endif
-#if defined(MBEDTLS_SHA512_C)
-#if !defined(MBEDTLS_SHA512_NO_SHA384)
-        case MBEDTLS_MD_SHA384:
-#endif
-        case MBEDTLS_MD_SHA512:
-            return mbedtls_internal_sha512_process(ctx->md_ctx, data);
-#endif
-        default:
-            return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
-    }
-}
+//     switch (ctx->md_info->type) {
+// #if defined(MBEDTLS_MD2_C)
+//         case MBEDTLS_MD_MD2:
+//             return mbedtls_internal_md2_process(ctx->md_ctx);
+// #endif
+// #if defined(MBEDTLS_MD4_C)
+//         case MBEDTLS_MD_MD4:
+//             return mbedtls_internal_md4_process(ctx->md_ctx, data);
+// #endif
+// #if defined(MBEDTLS_MD5_C)
+//         case MBEDTLS_MD_MD5:
+//             return mbedtls_internal_md5_process(ctx->md_ctx, data);
+// #endif
+// #if defined(MBEDTLS_RIPEMD160_C)
+//         case MBEDTLS_MD_RIPEMD160:
+//             return mbedtls_internal_ripemd160_process(ctx->md_ctx, data);
+// #endif
+// #if defined(MBEDTLS_SHA1_C)
+//         case MBEDTLS_MD_SHA1:
+//             return mbedtls_internal_sha1_process(ctx->md_ctx, data);
+// #endif
+// #if defined(MBEDTLS_SHA256_C)
+//         case MBEDTLS_MD_SHA224:
+//         case MBEDTLS_MD_SHA256:
+//             return mbedtls_internal_sha256_process(ctx->md_ctx, data);
+// #endif
+// #if defined(MBEDTLS_SHA512_C)
+// #if !defined(MBEDTLS_SHA512_NO_SHA384)
+//         case MBEDTLS_MD_SHA384:
+// #endif
+//         case MBEDTLS_MD_SHA512:
+//             return mbedtls_internal_sha512_process(ctx->md_ctx, data);
+// #endif
+//         default:
+//             return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+//     }
+// }
 
 unsigned char mbedtls_md_get_size(const mbedtls_md_info_t *md_info)
 {
@@ -882,22 +882,22 @@ unsigned char mbedtls_md_get_size(const mbedtls_md_info_t *md_info)
     return md_info->size;
 }
 
-mbedtls_md_type_t mbedtls_md_get_type(const mbedtls_md_info_t *md_info)
-{
-    if (md_info == NULL) {
-        return MBEDTLS_MD_NONE;
-    }
+// mbedtls_md_type_t mbedtls_md_get_type(const mbedtls_md_info_t *md_info)
+// {
+//     if (md_info == NULL) {
+//         return MBEDTLS_MD_NONE;
+//     }
 
-    return md_info->type;
-}
+//     return md_info->type;
+// }
 
-const char *mbedtls_md_get_name(const mbedtls_md_info_t *md_info)
-{
-    if (md_info == NULL) {
-        return NULL;
-    }
+// const char *mbedtls_md_get_name(const mbedtls_md_info_t *md_info)
+// {
+//     if (md_info == NULL) {
+//         return NULL;
+//     }
 
-    return md_info->name;
-}
+//     return md_info->name;
+// }
 
 #endif /* MBEDTLS_MD_C */
